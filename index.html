@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Travel - ค้นพบโลกกว้าง วางแผนการเดินทาง</title>
+    <!-- Google Fonts: Outfit & Prompt (for Thai support) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Glassmorphic Background Shapes for aesthetics -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Main Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo" onclick="app.navigate('home')">
+                <i class="fa-solid fa-earth-americas logo-icon"></i>
+                <span>World<span>Travel</span></span>
+            </a>
+            <nav class="nav-menu">
+                <a href="#" class="nav-link active" id="link-home" onclick="app.navigate('home')">
+                    <i class="fa-solid fa-compass"></i> สำรวจ
+                </a>
+                <a href="#" class="nav-link" id="link-planner" onclick="app.navigate('planner')">
+                    <i class="fa-solid fa-calendar-days"></i> แผนเดินทาง
+                </a>
+                <a href="#" class="nav-link" id="link-reviews" onclick="app.navigate('reviews')">
+                    <i class="fa-solid fa-star"></i> รีวิวทั้งหมด
+                </a>
+                <a href="#" class="nav-link" id="link-profile" onclick="app.navigate('profile')">
+                    <i class="fa-solid fa-user"></i> โปรไฟล์
+                </a>
+            </nav>
+            <div class="nav-actions">
+                <div class="profile-quick" onclick="app.navigate('profile')">
+                    <img id="nav-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile">
+                </div>
+                <button class="menu-toggle" onclick="app.toggleMobileMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-menu" id="mobile-menu">
+        <a href="#" class="mobile-link" onclick="app.navigate('home')"><i class="fa-solid fa-compass"></i> สำรวจ</a>
+        <a href="#" class="mobile-link" onclick="app.navigate('planner')"><i class="fa-solid fa-calendar-days"></i> แผนเดินทาง</a>
+        <a href="#" class="mobile-link" onclick="app.navigate('reviews')"><i class="fa-solid fa-star"></i> รีวิวทั้งหมด</a>
+        <a href="#" class="mobile-link" onclick="app.navigate('profile')"><i class="fa-solid fa-user"></i> โปรไฟล์</a>
+    </div>
+
+    <!-- Main Content Dynamic Container -->
+    <main class="main-content" id="app-container">
+        
+        <!-- ================= HOME / SEARCH TAB ================= -->
+        <section id="view-home" class="view-section active">
+            <!-- Hero Banner -->
+            <div class="hero-section">
+                <div class="hero-content">
+                    <span class="hero-badge">เปิดประตูสู่โลกกว้าง</span>
+                    <h1 class="hero-title">ค้นพบสถานที่ท่องเที่ยวถัดไปของคุณ</h1>
+                    <p class="hero-subtitle">วางแผนการเดินทาง ค้นหาคำแนะนำ และแบ่งปันประสบการณ์การเดินทางทั่วมุมโลก</p>
+                </div>
+            </div>
+
+            <!-- Search and Filter Panel -->
+            <div class="search-panel">
+                <div class="search-bar-row">
+                    <div class="search-input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-input" placeholder="ค้นหาตามชื่อสถานที่ เมือง หรือประเทศ..." oninput="app.handleSearch()">
+                    </div>
+                </div>
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-tags"></i> หมวดหมู่</label>
+                        <select id="filter-category" onchange="app.handleSearch()">
+                            <option value="">ทั้งหมด</option>
+                            <option value="Nature">ธรรมชาติ (Nature)</option>
+                            <option value="Culture">วัฒนธรรม (Culture)</option>
+                            <option value="Beach">ทะเล / ชายหาด (Beach)</option>
+                            <option value="City">เมืองใหญ่ (City)</option>
+                            <option value="Adventure">การผจญภัย (Adventure)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-earth-asia"></i> ภูมิภาค</label>
+                        <select id="filter-region" onchange="app.handleSearch()">
+                            <option value="">ทั้งหมด</option>
+                            <option value="Asia">เอเชีย (Asia)</option>
+                            <option value="Europe">ยุโรป (Europe)</option>
+                            <option value="Americas">อเมริกา (Americas)</option>
+                            <option value="Africa">แอฟริกา (Africa)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-wallet"></i> งบประมาณ</label>
+                        <select id="filter-budget" onchange="app.handleSearch()">
+                            <option value="">ทั้งหมด</option>
+                            <option value="$">ประหยัด ($)</option>
+                            <option value="$$">ปานกลาง ($$)</option>
+                            <option value="$$$">หรูหรา ($$$)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fa-solid fa-cloud-sun"></i> ช่วงเวลา (ฤดูกาล)</label>
+                        <select id="filter-season" onchange="app.handleSearch()">
+                            <option value="">ทั้งหมด</option>
+                            <option value="Spring">ใบไม้ผลิ (Spring)</option>
+                            <option value="Summer">ฤดูร้อน (Summer)</option>
+                            <option value="Autumn">ใบไม้ร่วง (Autumn)</option>
+                            <option value="Winter">ฤดูหนาว (Winter)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Destinations Section -->
+            <div class="destinations-container">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fa-solid fa-fire"></i> สถานที่ท่องเที่ยวแนะนำ</h2>
+                    <span id="results-count" class="results-count">พบ 0 สถานที่</span>
+                </div>
+                <div class="destinations-grid" id="destinations-grid">
+                    <!-- Cards will be dynamically loaded here by app.js -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= DESTINATION DETAIL TAB ================= -->
+        <section id="view-detail" class="view-section">
+            <div class="back-nav">
+                <button class="btn-back" onclick="app.navigate('home')">
+                    <i class="fa-solid fa-arrow-left"></i> กลับไปหน้าสำรวจ
+                </button>
+            </div>
+            
+            <div id="detail-content-placeholder">
+                <!-- Detail content loaded dynamically -->
+            </div>
+        </section>
+
+
+        <!-- ================= TRAVEL PLANNER TAB ================= -->
+        <section id="view-planner" class="view-section">
+            <div class="planner-header-row">
+                <div>
+                    <h1 class="page-title"><i class="fa-solid fa-route page-icon-grad"></i> แผนการเดินทางของฉัน</h1>
+                    <p class="page-subtitle">จัดตารางเวลา ระบุที่พัก และจัดการทริปของคุณในที่เดียว</p>
+                </div>
+                <button class="btn-action" onclick="app.sharePlanner()">
+                    <i class="fa-solid fa-share-nodes"></i> แบ่งปันแผนเดินทาง
+                </button>
+            </div>
+
+            <div class="planner-layout">
+                <!-- Left panel: Form and list of plans -->
+                <div class="planner-list-panel glass-card">
+                    <h2><i class="fa-solid fa-clock"></i> ลำดับแผนการเดินทาง</h2>
+                    <div id="planner-items-container" class="planner-items-container">
+                        <!-- Planner items load dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right panel: Interactive timeline preview -->
+                <div class="planner-timeline-panel glass-card">
+                    <h2><i class="fa-solid fa-map-location-dot"></i> พรีวิวตารางเวลาทริป</h2>
+                    <div class="timeline-visual" id="timeline-visualizer">
+                        <!-- Timeline load dynamically -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= ALL REVIEWS TAB ================= -->
+        <section id="view-reviews" class="view-section">
+            <div class="section-header">
+                <div>
+                    <h1 class="page-title"><i class="fa-solid fa-star-half-stroke page-icon-grad"></i> รีวิวและประสบการณ์เดินทาง</h1>
+                    <p class="page-subtitle">แชร์ความคิดเห็น คะแนนความประทับใจ หรือรับแรงบันดาลใจจากเพื่อนนักเดินทาง</p>
+                </div>
+            </div>
+
+            <div class="reviews-page-layout">
+                <!-- Top Summary -->
+                <div class="reviews-summary-card glass-card">
+                    <div class="summary-stats">
+                        <div class="stat-big-num" id="all-reviews-avg">4.8</div>
+                        <div class="stat-stars" id="all-reviews-stars">
+                            <!-- Stars dynamic -->
+                        </div>
+                        <p class="stat-label" id="all-reviews-count">จากรีวิวทั้งหมด 0 รีวิว</p>
+                    </div>
+                    <div class="summary-bar-chart" id="summary-bar-chart">
+                        <!-- Bar chart rows here -->
+                    </div>
+                </div>
+
+                <!-- Reviews Feed -->
+                <div class="reviews-feed" id="all-reviews-feed">
+                    <!-- Reviews load dynamically -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ================= USER PROFILE TAB ================= -->
+        <section id="view-profile" class="view-section">
+            <h1 class="page-title"><i class="fa-solid fa-id-card page-icon-grad"></i> โปรไฟล์นักเดินทาง</h1>
+            
+            <div class="profile-layout">
+                <!-- Left: Profile details form -->
+                <div class="profile-main-card glass-card">
+                    <div class="profile-header-edit">
+                        <div class="profile-avatar-wrapper">
+                            <img id="profile-img-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile">
+                            <button class="btn-change-avatar" onclick="app.triggerAvatarSelect()">
+                                <i class="fa-solid fa-camera"></i>
+                            </button>
+                        </div>
+                        <div class="profile-user-basic">
+                            <h2 id="profile-name-display">สมศักดิ์ รักษ์โลก</h2>
+                            <p id="profile-email-display">somsak.travel@gmail.com</p>
+                        </div>
+                    </div>
+
+                    <form id="profile-form" onsubmit="app.saveProfile(event)" class="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profile-name">ชื่อผู้ใช้</label>
+                                <input type="text" id="profile-name" required value="สมศักดิ์ รักษ์โลก">
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-email">อีเมล</label>
+                                <input type="email" id="profile-email" required value="somsak.travel@gmail.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-bio">ประวัติย่อ / คำแนะนำตัว</label>
+                            <textarea id="profile-bio" rows="3" placeholder="เขียนคำอธิบายตัวคุณและความชื่นชอบในการท่องเที่ยว...">ชอบสำรวจเมืองเก่า ท่องเที่ยวแนวธรรมชาติป่าเขา และสะสมภาพถ่ายสวยๆ ทั่วโลก</textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">บันทึกข้อมูลโปรไฟล์</button>
+                    </form>
+                </div>
+
+                <!-- Right: Stats & Favorites -->
+                <div class="profile-sidebar-panel">
+                    <div class="stats-grid">
+                        <div class="stat-card glass-card">
+                            <span class="stat-num" id="stat-visited-count">12</span>
+                            <span class="stat-text">ประเทศที่เคยไป</span>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <span class="stat-num" id="stat-saved-count">5</span>
+                            <span class="stat-text">สถานที่บันทึกไว้</span>
+                        </div>
+                    </div>
+
+                    <div class="favorites-list glass-card">
+                        <h3><i class="fa-solid fa-heart text-danger"></i> สถานที่ที่ชื่นชอบ</h3>
+                        <div id="favorites-container" class="favorites-container">
+                            <!-- Favorites dynamic loading -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal to Write a Review -->
+    <div class="modal" id="review-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2>เขียนรีวิวท่องเที่ยว</h2>
+                <button class="modal-close" onclick="app.closeReviewModal()">&times;</button>
+            </div>
+            <form id="review-form" onsubmit="app.submitReview(event)">
+                <input type="hidden" id="review-dest-id">
+                <div class="form-group">
+                    <label>คะแนนความประทับใจ</label>
+                    <div class="rating-input">
+                        <input type="radio" name="star-rating" id="star-5" value="5" required><label for="star-5" class="fa-solid fa-star"></label>
+                        <input type="radio" name="star-rating" id="star-4" value="4"><label for="star-4" class="fa-solid fa-star"></label>
+                        <input type="radio" name="star-rating" id="star-3" value="3"><label for="star-3" class="fa-solid fa-star"></label>
+                        <input type="radio" name="star-rating" id="star-2" value="2"><label for="star-2" class="fa-solid fa-star"></label>
+                        <input type="radio" name="star-rating" id="star-1" value="1"><label for="star-1" class="fa-solid fa-star"></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="review-author">ชื่อผู้รีวิว</label>
+                    <input type="text" id="review-author" required placeholder="ใส่ชื่อของคุณที่แสดงในการรีวิว">
+                </div>
+                <div class="form-group">
+                    <label for="review-comment">ความคิดเห็น</label>
+                    <textarea id="review-comment" rows="4" required placeholder="แชร์ความประทับใจ รายละเอียดที่พัก อาหาร หรือข้อแนะนำการเดินทาง..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">ส่งความคิดเห็น</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification System -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
