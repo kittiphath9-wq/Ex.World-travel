@@ -159,15 +159,37 @@
                     <h1 class="page-title"><i class="fa-solid fa-route page-icon-grad"></i> แผนการเดินทางของฉัน</h1>
                     <p class="page-subtitle">จัดตารางเวลา ระบุที่พัก และจัดการทริปของคุณในที่เดียว</p>
                 </div>
-                <button class="btn-action" onclick="app.sharePlanner()">
-                    <i class="fa-solid fa-share-nodes"></i> แบ่งปันแผนเดินทาง
-                </button>
+                <div class="planner-actions">
+                    <div class="trip-selector-wrapper">
+                        <i class="fa-solid fa-plane-departure selector-icon"></i>
+                        <select id="trip-selector" onchange="app.handleTripChange(this.value)">
+                            <!-- Dynamic trip list -->
+                        </select>
+                    </div>
+                    <button class="btn-action" onclick="app.createNewTrip()">
+                        <i class="fa-solid fa-circle-plus"></i> ทริปใหม่
+                    </button>
+                    <button class="btn-action btn-danger" onclick="app.deleteCurrentTrip()" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); border-color: rgba(239, 68, 68, 0.3);">
+                        <i class="fa-solid fa-trash-can"></i> ลบทริป
+                    </button>
+                    <button class="btn-action" onclick="app.printPlanner()">
+                        <i class="fa-solid fa-print"></i> พิมพ์แผน (PDF)
+                    </button>
+                    <button class="btn-action" onclick="app.sharePlanner()">
+                        <i class="fa-solid fa-share-nodes"></i> แบ่งปันแผน
+                    </button>
+                </div>
             </div>
 
             <div class="planner-layout">
                 <!-- Left panel: Form and list of plans -->
                 <div class="planner-list-panel glass-card">
-                    <h2><i class="fa-solid fa-clock"></i> ลำดับแผนการเดินทาง</h2>
+                    <div class="planner-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+                        <h2 style="margin: 0; font-size: 1.25rem;"><i class="fa-solid fa-clock"></i> ลำดับแผนการเดินทาง</h2>
+                        <button class="btn-action btn-sm" onclick="app.openCustomActivityModal()" style="font-size: 0.8rem; padding: 6px 12px;">
+                            <i class="fa-solid fa-calendar-plus"></i> + กิจกรรมอื่น ๆ
+                        </button>
+                    </div>
                     <div id="planner-items-container" class="planner-items-container">
                         <!-- Planner items load dynamically -->
                     </div>
@@ -190,6 +212,28 @@
                 <div>
                     <h1 class="page-title"><i class="fa-solid fa-star-half-stroke page-icon-grad"></i> รีวิวและประสบการณ์เดินทาง</h1>
                     <p class="page-subtitle">แชร์ความคิดเห็น คะแนนความประทับใจ หรือรับแรงบันดาลใจจากเพื่อนนักเดินทาง</p>
+                </div>
+            </div>
+
+            <!-- Reviews Filter Panel -->
+            <div class="reviews-filter-panel glass-card" style="margin-bottom: 25px; padding: 18px 25px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; border: 1px solid var(--card-border);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-filter" style="color: var(--primary); font-size: 1.1rem;"></i>
+                    <span style="font-weight: 500; font-size: 0.95rem;">คัดกรองประสบการณ์เดินทาง:</span>
+                </div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <select id="review-filter-rating" onchange="app.renderReviewsPage()" style="background: rgba(7, 8, 10, 0.7); border: 1px solid var(--card-border); color: var(--text-main); padding: 8px 15px; border-radius: var(--radius-md); outline: none; font-family: inherit; font-size: 0.85rem; cursor: pointer;">
+                        <option value="">คะแนนดาวทั้งหมด</option>
+                        <option value="5">⭐⭐⭐⭐⭐ (5 ดาว)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 ดาว)</option>
+                        <option value="3">⭐⭐⭐ (3 ดาว)</option>
+                        <option value="2">⭐⭐ (2 ดาว)</option>
+                        <option value="1">⭐ (1 ดาว)</option>
+                    </select>
+                    <select id="review-filter-destination" onchange="app.renderReviewsPage()" style="background: rgba(7, 8, 10, 0.7); border: 1px solid var(--card-border); color: var(--text-main); padding: 8px 15px; border-radius: var(--radius-md); outline: none; font-family: inherit; font-size: 0.85rem; width: 220px; cursor: pointer;">
+                        <option value="">สถานที่ท่องเที่ยวทั้งหมด</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
                 </div>
             </div>
 
@@ -218,60 +262,124 @@
 
         <!-- ================= USER PROFILE TAB ================= -->
         <section id="view-profile" class="view-section">
-            <h1 class="page-title"><i class="fa-solid fa-id-card page-icon-grad"></i> โปรไฟล์นักเดินทาง</h1>
-            
-            <div class="profile-layout">
-                <!-- Left: Profile details form -->
-                <div class="profile-main-card glass-card">
-                    <div class="profile-header-edit">
-                        <div class="profile-avatar-wrapper">
-                            <img id="profile-img-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile">
-                            <button class="btn-change-avatar" onclick="app.triggerAvatarSelect()">
-                                <i class="fa-solid fa-camera"></i>
-                            </button>
-                        </div>
-                        <div class="profile-user-basic">
-                            <h2 id="profile-name-display">สมศักดิ์ รักษ์โลก</h2>
-                            <p id="profile-email-display">somsak.travel@gmail.com</p>
-                        </div>
-                    </div>
-
-                    <form id="profile-form" onsubmit="app.saveProfile(event)" class="profile-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="profile-name">ชื่อผู้ใช้</label>
-                                <input type="text" id="profile-name" required value="สมศักดิ์ รักษ์โลก">
-                            </div>
-                            <div class="form-group">
-                                <label for="profile-email">อีเมล</label>
-                                <input type="email" id="profile-email" required value="somsak.travel@gmail.com">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="profile-bio">ประวัติย่อ / คำแนะนำตัว</label>
-                            <textarea id="profile-bio" rows="3" placeholder="เขียนคำอธิบายตัวคุณและความชื่นชอบในการท่องเที่ยว...">ชอบสำรวจเมืองเก่า ท่องเที่ยวแนวธรรมชาติป่าเขา และสะสมภาพถ่ายสวยๆ ทั่วโลก</textarea>
-                        </div>
-                        <button type="submit" class="btn-submit">บันทึกข้อมูลโปรไฟล์</button>
-                    </form>
+            <!-- ================= AUTH VIEW (Login/Register) ================= -->
+            <div id="profile-auth-card" class="auth-card glass-card" style="display: none; max-width: 480px; margin: 40px auto; padding: 35px; border: 1px solid var(--card-border); box-shadow: var(--shadow);">
+                <div class="auth-tabs" style="display: flex; margin-bottom: 25px; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; gap: 15px;">
+                    <button class="auth-tab active" id="tab-login" onclick="app.switchAuthTab('login')" style="flex: 1; background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: 600; padding: 8px 0; cursor: pointer; transition: var(--transition); border-bottom: 2px solid transparent; font-family: inherit;">เข้าสู่ระบบ</button>
+                    <button class="auth-tab" id="tab-register" onclick="app.switchAuthTab('register')" style="flex: 1; background: none; border: none; color: var(--text-muted); font-size: 1.1rem; font-weight: 600; padding: 8px 0; cursor: pointer; transition: var(--transition); border-bottom: 2px solid transparent; font-family: inherit;">สมัครสมาชิก</button>
                 </div>
+                
+                <!-- Login Form -->
+                <form id="login-form" onsubmit="app.handleLogin(event)" class="auth-form active" style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="form-group">
+                        <label for="login-email">อีเมล</label>
+                        <input type="email" id="login-email" required placeholder="somsak@worldtravel.com" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">รหัสผ่าน</label>
+                        <input type="password" id="login-password" required placeholder="รหัสผ่าน (เช่น 123456)" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                    </div>
+                    <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border: none; color: var(--bg-darker); font-weight: 700; padding: 14px; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; transition: var(--transition);">เข้าสู่ระบบ</button>
+                    <p class="auth-note" style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-top: 10px;">บัญชีทดลองใช้งาน: somsak@worldtravel.com / รหัสผ่าน: 123456</p>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="register-form" onsubmit="app.handleRegister(event)" class="auth-form" style="display: none; flex-direction: column; gap: 20px;">
+                    <div class="form-group">
+                        <label for="register-name">ชื่อผู้ใช้งาน</label>
+                        <input type="text" id="register-name" required placeholder="ชื่อเล่น หรือชื่อจริงของคุณ" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">อีเมล</label>
+                        <input type="email" id="register-email" required placeholder="example@worldtravel.com" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">รหัสผ่าน</label>
+                        <input type="password" id="register-password" required placeholder="กำหนดรหัสผ่าน 6 ตัวขึ้นไป" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                    </div>
+                    <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border: none; color: var(--bg-darker); font-weight: 700; padding: 14px; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; transition: var(--transition);">สมัครสมาชิก</button>
+                </form>
+            </div>
 
-                <!-- Right: Stats & Favorites -->
-                <div class="profile-sidebar-panel">
-                    <div class="stats-grid">
-                        <div class="stat-card glass-card">
-                            <span class="stat-num" id="stat-visited-count">12</span>
-                            <span class="stat-text">ประเทศที่เคยไป</span>
+            <!-- ================= LOGGED IN PROFILE VIEW ================= -->
+            <div id="profile-logged-in-view" style="display: block;">
+                <div class="profile-title-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h1 class="page-title" style="margin: 0;"><i class="fa-solid fa-id-card page-icon-grad"></i> โปรไฟล์นักเดินทาง</h1>
+                    <button class="btn-action logout-btn" onclick="app.handleLogout()" style="background: rgba(239, 68, 68, 0.15); color: var(--danger); border-color: rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: var(--radius-md); font-family: inherit; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: var(--transition);">
+                        <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+                    </button>
+                </div>
+                
+                <div class="profile-layout">
+                    <!-- Left: Profile details form -->
+                    <div class="profile-main-card glass-card">
+                        <div class="profile-header-edit">
+                            <div class="profile-avatar-wrapper">
+                                <img id="profile-img-preview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile">
+                                <button class="btn-change-avatar" onclick="app.triggerAvatarUploadClick()">
+                                    <i class="fa-solid fa-camera"></i>
+                                </button>
+                                <input type="file" id="profile-avatar-file-input" accept="image/*" style="display: none;" onchange="app.handleAvatarFileChange(event)">
+                            </div>
+                            <div class="profile-user-basic">
+                                <h2 id="profile-name-display">สมศักดิ์ รักษ์โลก</h2>
+                                <p id="profile-email-display">somsak@worldtravel.com</p>
+                            </div>
                         </div>
-                        <div class="stat-card glass-card">
-                            <span class="stat-num" id="stat-saved-count">5</span>
-                            <span class="stat-text">สถานที่บันทึกไว้</span>
-                        </div>
+
+                        <form id="profile-form" onsubmit="app.saveProfile(event)" class="profile-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profile-name">ชื่อผู้ใช้</label>
+                                    <input type="text" id="profile-name" required value="สมศักดิ์ รักษ์โลก">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-email">อีเมล (ใช้ระบุตัวตน)</label>
+                                    <input type="email" id="profile-email" disabled style="opacity: 0.6; cursor: not-allowed;">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profile-style">สไตล์การท่องเที่ยว (Travel Style)</label>
+                                    <select id="profile-style" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none; cursor: pointer;">
+                                        <option value="Nature">ธรรมชาติ (Nature)</option>
+                                        <option value="Culture">วัฒนธรรม (Culture)</option>
+                                        <option value="Beach">ทะเล / ชายหาด (Beach)</option>
+                                        <option value="City">เมืองใหญ่ (City)</option>
+                                        <option value="Adventure">การผจญภัย (Adventure)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-next-destination">เป้าหมายทริปถัดไป (Next Destination)</label>
+                                    <input type="text" id="profile-next-destination" placeholder="เช่น ภูเขาไฟฟูจิ, ฝรั่งเศส">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-bio">ประวัติย่อ / คำแนะนำตัว</label>
+                                <textarea id="profile-bio" rows="3" placeholder="เขียนคำอธิบายตัวคุณและความชื่นชอบในการท่องเที่ยว...">ชอบสำรวจเมืองเก่า ท่องเที่ยวแนวธรรมชาติป่าเขา และสะสมภาพถ่ายสวยๆ ทั่วโลก</textarea>
+                            </div>
+                            <button type="submit" class="btn-submit">บันทึกข้อมูลโปรไฟล์</button>
+                        </form>
                     </div>
 
-                    <div class="favorites-list glass-card">
-                        <h3><i class="fa-solid fa-heart text-danger"></i> สถานที่ที่ชื่นชอบ</h3>
-                        <div id="favorites-container" class="favorites-container">
-                            <!-- Favorites dynamic loading -->
+                    <!-- Right: Stats & Favorites -->
+                    <div class="profile-sidebar-panel">
+                        <div class="stats-grid">
+                            <div class="stat-card glass-card">
+                                <span class="stat-num" id="stat-visited-count">12</span>
+                                <span class="stat-text">ประเทศที่เคยไป</span>
+                            </div>
+                            <div class="stat-card glass-card">
+                                <span class="stat-num" id="stat-saved-count">5</span>
+                                <span class="stat-text">สถานที่บันทึกไว้</span>
+                            </div>
+                        </div>
+
+                        <div class="favorites-list glass-card">
+                            <h3><i class="fa-solid fa-heart text-danger"></i> สถานที่ที่ชื่นชอบ</h3>
+                            <div id="favorites-container" class="favorites-container">
+                                <!-- Favorites dynamic loading -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -306,7 +414,49 @@
                     <label for="review-comment">ความคิดเห็น</label>
                     <textarea id="review-comment" rows="4" required placeholder="แชร์ความประทับใจ รายละเอียดที่พัก อาหาร หรือข้อแนะนำการเดินทาง..."></textarea>
                 </div>
+                <div class="form-group">
+                    <label>ภาพประกอบการเดินทาง (คุณสามารถเลือกได้หลายภาพ)</label>
+                    <div class="photo-upload-wrapper" style="border: 2px dashed var(--card-border); border-radius: var(--radius-md); padding: 20px; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('review-photos-input').click()">
+                        <i class="fa-solid fa-images" style="font-size: 2rem; color: var(--primary); margin-bottom: 10px; display: block;"></i>
+                        <span style="font-size: 0.88rem; color: var(--text-muted);">คลิกเพื่อเลือกไฟล์รูปภาพ (.jpg, .png)</span>
+                        <input type="file" id="review-photos-input" accept="image/*" multiple onchange="app.handleReviewPhotosChange(event)" style="display: none;" onclick="event.stopPropagation()">
+                    </div>
+                    <div id="review-photos-preview" class="photos-preview-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <!-- Selected photos preview will load here -->
+                    </div>
+                </div>
                 <button type="submit" class="btn-submit">ส่งความคิดเห็น</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal to Add Custom Activity -->
+    <div class="modal" id="custom-activity-modal">
+        <div class="modal-content glass-card" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>เพิ่มกิจกรรมท่องเที่ยวอิสระ</h2>
+                <button class="modal-close" onclick="app.closeCustomActivityModal()">&times;</button>
+            </div>
+            <form id="custom-activity-form" onsubmit="app.submitCustomActivity(event)" style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="form-group">
+                    <label for="custom-title">ชื่อกิจกรรม / สถานที่ท่องเที่ยวที่กำหนดเอง</label>
+                    <input type="text" id="custom-title" required placeholder="เช่น เช็คอินโรงแรม, ชิมซูชิร้านดัง, เดินทางไปสนามบิน" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="custom-date">วันที่เดินทาง</label>
+                        <input type="date" id="custom-date" required style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-time">เวลา</label>
+                        <input type="time" id="custom-time" required value="09:00" style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="custom-notes">รายละเอียด / โน้ตบันทึกเพิ่มเติม</label>
+                    <textarea id="custom-notes" rows="3" placeholder="ระบุการเดินทาง ค่าใช้จ่าย หรือสิ่งที่ต้องเตรียมพร้อม..." style="background: rgba(7, 8, 10, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-md); padding: 12px; color: var(--text-main); font-family: inherit; font-size: 0.9rem; outline: none;"></textarea>
+                </div>
+                <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, var(--primary), var(--primary-hover)); border: none; color: var(--bg-darker); font-weight: 700; padding: 14px; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; transition: var(--transition);">บันทึกลงแผนเดินทาง</button>
             </form>
         </div>
     </div>

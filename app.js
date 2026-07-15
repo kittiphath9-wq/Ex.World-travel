@@ -1291,47 +1291,135 @@ class WorldTravelApp {
 
         // Default state values
         this.currentView = "home";
-        this.savedDestinations = JSON.parse(localStorage.getItem("wt_saved")) || [];
-        this.plans = JSON.parse(localStorage.getItem("wt_plans")) || [];
+        
+        // Local database of users
+        this.users = JSON.parse(localStorage.getItem("wt_users")) || [
+            {
+                email: "somsak@worldtravel.com",
+                password: "123456",
+                name: "สมศักดิ์ รักษ์โลก",
+                bio: "ชอบสำรวจเมืองเก่า ท่องเที่ยวแนวธรรมชาติป่าเขา และสะสมภาพถ่ายสวยๆ ทั่วโลก",
+                avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+                style: "Nature",
+                nextDestination: "ภูเขาไฟฟูจิ",
+                visitedCount: 12,
+                savedDestinations: ["kyoto", "santorini", "alps", "new-york", "maldives"],
+                trips: [
+                    { id: "trip-1", name: "ทริปญี่ปุ่น 2026 (Japan Trip)" },
+                    { id: "trip-2", name: "ทริปพักผ่อนซัมเมอร์เกาะซานโตรินี" }
+                ],
+                currentTripId: "trip-1",
+                plans: [
+                    { destId: "kyoto", destName: "เกียวโต (Kyoto)", image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80", date: "2026-07-10", time: "09:00", notes: "ไปป่าไผ่ตอนเช้าตรู่ จะได้ไม่มีคนเยอะ", tripId: "trip-1" },
+                    { destId: "custom-1", destName: "เช็คอินโรงแรม Sowaka Ryokan", image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80", date: "2026-07-10", time: "14:00", notes: "เตรียมเอกสารจองโรงแรม", tripId: "trip-1" },
+                    { destId: "osaka", destName: "โอซาก้า (Osaka)", image: "https://images.unsplash.com/photo-1589452271712-64b8a66c7b77?auto=format&fit=crop&w=800&q=80", date: "2026-07-12", time: "10:00", notes: "ไปกินทาโกยากิร้าน Ajinoya", tripId: "trip-1" },
+                    { destId: "santorini", destName: "ซานโตรินี (Santorini)", image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=800&q=80", date: "2026-08-15", time: "15:00", notes: "พักที่ Grace Hotel ชมพระอาทิตย์ตกดิน", tripId: "trip-2" }
+                ]
+            }
+        ];
+        localStorage.setItem("wt_users", JSON.stringify(this.users));
+
+        // Get current logged-in user email
+        this.currentUserEmail = localStorage.getItem("wt_current_user");
+        if (!this.currentUserEmail && this.users.length > 0) {
+            // Auto login default user on first load
+            this.currentUserEmail = this.users[0].email;
+            localStorage.setItem("wt_current_user", this.currentUserEmail);
+        }
+
+        // Active user data binding
+        this.currentUser = this.users.find(u => u.email === this.currentUserEmail) || null;
+        this.loadUserSessionData();
+
+        // Load reviews database
         this.reviews = JSON.parse(localStorage.getItem("wt_reviews")) || [
             {
                 destId: "kyoto",
                 destName: "เกียวโต (Kyoto)",
                 author: "ณัฐพงษ์ แก้วดี",
+                authorEmail: "nattapong@demo.com",
                 rating: 5,
                 comment: "ป่าไผ่ Arashiyama สวยงามสงบมาก แนะนำให้ไปช่วงเช้าตรู่ประมาณ 7 โมงเช้า จะได้รูปถ่ายที่ไม่มีคนรบกวนเลยครับ อาหารไคเซกิก็อร่อยและประณีตมาก",
                 date: "24 มิ.ย. 2026",
-                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
+                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
+                photos: []
             },
             {
                 destId: "santorini",
                 destName: "ซานโตรินี (Santorini)",
                 author: "มนัสวี เลิศรัตนชัย",
+                authorEmail: "manaswee@demo.com",
                 rating: 5,
                 comment: "หมู่บ้าน Oia พระอาทิตย์ตกสมคำร่ำลือจริงๆ ค่ะ แสงสีทองตกกระทบตึกขาวคือโรแมนติกสุดๆ แนะนำ Grace Hotel บริการดีเลิศและวิวหน้าผาสวยประทับใจมาก",
                 date: "20 มิ.ย. 2026",
-                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
+                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+                photos: []
             },
             {
                 destId: "bali",
                 destName: "บาหลี (Bali)",
                 author: "วิชัย จิตใจงาม",
+                authorEmail: "wichai@demo.com",
                 rating: 4,
                 comment: "การชมระบำเกจักที่วัดอูลูวาตูริมหน้าผาสวยงามอลังการมากครับ เสียดายคนเยอะไปหน่อยในช่วงไฮซีซั่น ขากลับรถค่อนข้างติด แต่ภาพรวมคุ้มค่าเงินมาก",
                 date: "15 มิ.ย. 2026",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
+                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80",
+                photos: []
             }
         ];
-        this.profile = JSON.parse(localStorage.getItem("wt_profile")) || {
-            name: "สมศักดิ์ รักษ์โลก",
-            email: "somsak.travel@gmail.com",
-            bio: "ชอบสำรวจเมืองเก่า ท่องเที่ยวแนวธรรมชาติป่าเขา และสะสมภาพถ่ายสวยๆ ทั่วโลก",
-            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-            visitedCount: 12
-        };
+        localStorage.setItem("wt_reviews", JSON.stringify(this.reviews));
+
+        // State for attached images when writing a review
+        this.attachedReviewPhotos = [];
 
         // Initialize elements
         this.init();
+    }
+
+    loadUserSessionData() {
+        if (this.currentUser) {
+            this.savedDestinations = this.currentUser.savedDestinations || [];
+            this.plans = this.currentUser.plans || [];
+            this.trips = this.currentUser.trips || [{ id: "trip-default", name: "ทริปของฉัน" }];
+            this.currentTripId = this.currentUser.currentTripId || (this.trips.length > 0 ? this.trips[0].id : null);
+            this.profile = {
+                name: this.currentUser.name,
+                email: this.currentUser.email,
+                bio: this.currentUser.bio,
+                avatar: this.currentUser.avatar,
+                style: this.currentUser.style || "Nature",
+                nextDestination: this.currentUser.nextDestination || "",
+                visitedCount: this.currentUser.visitedCount || 0
+            };
+        } else {
+            this.savedDestinations = [];
+            this.plans = [];
+            this.trips = [];
+            this.currentTripId = null;
+            this.profile = null;
+        }
+    }
+
+    saveUsersToStorage() {
+        localStorage.setItem("wt_users", JSON.stringify(this.users));
+    }
+
+    updateCurrentUserInDatabase() {
+        if (!this.currentUserEmail) return;
+        const idx = this.users.findIndex(u => u.email === this.currentUserEmail);
+        if (idx !== -1) {
+            this.users[idx].savedDestinations = this.savedDestinations;
+            this.users[idx].plans = this.plans;
+            this.users[idx].trips = this.trips;
+            this.users[idx].currentTripId = this.currentTripId;
+            this.users[idx].name = this.profile.name;
+            this.users[idx].bio = this.profile.bio;
+            this.users[idx].avatar = this.profile.avatar;
+            this.users[idx].style = this.profile.style;
+            this.users[idx].nextDestination = this.profile.nextDestination;
+            this.users[idx].visitedCount = this.profile.visitedCount;
+            this.saveUsersToStorage();
+        }
     }
 
     init() {
@@ -1341,6 +1429,7 @@ class WorldTravelApp {
         this.renderReviewsPage();
         this.renderProfile();
         this.updateCounts();
+        this.populateReviewFilterDestinations();
 
         // Restore active nav view link
         this.navigate(this.currentView);
@@ -1662,13 +1751,19 @@ class WorldTravelApp {
 
     // Toggle Planner state
     togglePlannerItem(destId) {
+        if (!this.currentUserEmail) {
+            this.showToast("โปรดเข้าสู่ระบบก่อนจัดการแผนเดินทาง", "error");
+            this.navigate("profile");
+            return;
+        }
+
         const dest = this.destinations.find(d => d.id === destId);
         if (!dest) return;
 
-        const planIndex = this.plans.findIndex(p => p.destId === destId);
+        const planIndex = this.plans.findIndex(p => p.destId === destId && p.tripId === this.currentTripId);
 
         if (planIndex === -1) {
-            // Add new plan template
+            // Add new plan template to the current trip
             const today = new Date().toISOString().split('T')[0];
             this.plans.push({
                 destId: destId,
@@ -1676,17 +1771,23 @@ class WorldTravelApp {
                 image: dest.image,
                 date: today,
                 time: "09:00",
-                notes: ""
+                notes: "",
+                tripId: this.currentTripId
             });
-            this.showToast(`เพิ่ม ${dest.name} เข้าในตารางแผนเดินทางของคุณแล้ว`);
+            this.showToast(`เพิ่ม ${dest.name} เข้าในแผน "${this.getCurrentTripName()}" แล้ว`);
         } else {
-            // Remove plan
+            // Remove plan from the current trip
             this.plans.splice(planIndex, 1);
-            this.showToast(`นำ ${dest.name} ออกจากตารางแผนเดินทางแล้ว`, "warning");
+            this.showToast(`นำ ${dest.name} ออกจากแผน "${this.getCurrentTripName()}" แล้ว`, "warning");
         }
 
-        localStorage.setItem("wt_plans", JSON.stringify(this.plans));
+        this.updateCurrentUserInDatabase();
         this.viewDetail(destId); // Refresh detail UI state
+    }
+
+    getCurrentTripName() {
+        const trip = this.trips.find(t => t.id === this.currentTripId);
+        return trip ? trip.name : "ทริปของฉัน";
     }
 
     // Render Travel Planner list & timeline
@@ -1697,34 +1798,55 @@ class WorldTravelApp {
         container.innerHTML = "";
         timeline.innerHTML = "";
 
-        if (this.plans.length === 0) {
+        // Render trip list selector
+        this.renderTripSelector();
+
+        if (!this.currentUserEmail) {
             container.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-                    <i class="fa-solid fa-calendar-xmark" style="font-size: 2.5rem; margin-bottom: 15px; color: rgba(255,255,255,0.1)"></i>
-                    <p>ยังไม่มีแผนเดินทางในทริปนี้ ค้นหาสถานที่เที่ยวและกดปุ่ม "เพิ่มในแผนเดินทาง" เพื่อวางแผนทริปแรกของคุณได้เลย!</p>
+                    <i class="fa-solid fa-user-lock" style="font-size: 2.5rem; margin-bottom: 15px; color: rgba(255,255,255,0.1)"></i>
+                    <p>กรุณาลงชื่อเข้าใช้งานที่หน้าโปรไฟล์เพื่อสร้างและจัดการแผนการเดินทางของคุณค่ะ</p>
                 </div>
             `;
             timeline.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: var(--text-muted); font-style: italic;">
-                    ตารางเวลาว่างเปล่า
+                    กรุณาลงชื่อเข้าใช้
+                </div>
+            `;
+            return;
+        }
+
+        // Get plans only for the active trip
+        const tripPlans = this.plans.filter(p => p.tripId === this.currentTripId);
+
+        if (tripPlans.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <i class="fa-solid fa-calendar-xmark" style="font-size: 2.5rem; margin-bottom: 15px; color: rgba(255,255,255,0.1)"></i>
+                    <p>ยังไม่มีแผนเดินทางในทริปนี้ ค้นหาสถานที่เที่ยวและกดปุ่ม "เพิ่มในแผนเดินทาง" หรือกดปุ่ม "+ กิจกรรมอื่น ๆ" เพื่อเริ่มต้นกันได้เลย!</p>
+                </div>
+            `;
+            timeline.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-muted); font-style: italic;">
+                    ทริปยังว่างเปล่า
                 </div>
             `;
             return;
         }
 
         // Sort plans by date and time
-        this.plans.sort((a, b) => {
+        tripPlans.sort((a, b) => {
             const dateA = new Date(`${a.date}T${a.time}`);
             const dateB = new Date(`${b.date}T${b.time}`);
             return dateA - dateB;
         });
 
         // Load planner list cards
-        this.plans.forEach((plan, idx) => {
+        tripPlans.forEach((plan, idx) => {
             const card = document.createElement("div");
             card.className = "planner-item-card";
             card.innerHTML = `
-                <button class="btn-delete-plan" onclick="app.deletePlan(${idx})">
+                <button class="btn-delete-plan" onclick="app.deletePlan('${plan.destId}')">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
                 <div class="planner-item-img">
@@ -1735,16 +1857,16 @@ class WorldTravelApp {
                     <div class="planner-inputs">
                         <div class="input-field">
                             <label>วันที่เดินทาง</label>
-                            <input type="date" value="${plan.date}" onchange="app.updatePlanField(${idx}, 'date', this.value)">
+                            <input type="date" value="${plan.date}" onchange="app.updatePlanField('${plan.destId}', 'date', this.value)">
                         </div>
                         <div class="input-field">
                             <label>เวลาที่ถึง</label>
-                            <input type="time" value="${plan.time}" onchange="app.updatePlanField(${idx}, 'time', this.value)">
+                            <input type="time" value="${plan.time}" onchange="app.updatePlanField('${plan.destId}', 'time', this.value)">
                         </div>
                     </div>
                     <div class="input-field">
                         <label>โน้ตบันทึกย่อการเดินทาง</label>
-                        <textarea placeholder="เช่น โรงแรมที่พัก, อาหารห้ามพลาด..." onchange="app.updatePlanField(${idx}, 'notes', this.value)">${plan.notes || ''}</textarea>
+                        <textarea placeholder="เช่น โรงแรมที่พัก, อาหารห้ามพลาด..." onchange="app.updatePlanField('${plan.destId}', 'notes', this.value)">${plan.notes || ''}</textarea>
                     </div>
                 </div>
             `;
@@ -1768,43 +1890,180 @@ class WorldTravelApp {
         });
     }
 
-    // Update Plan card fields dynamically
-    updatePlanField(idx, field, val) {
-        this.plans[idx][field] = val;
-        localStorage.setItem("wt_plans", JSON.stringify(this.plans));
-
-        // Re-render planner to update timeline
-        this.renderPlanner();
+    // Update Plan card fields dynamically by unique destId and tripId
+    updatePlanField(destId, field, val) {
+        const plan = this.plans.find(p => p.destId === destId && p.tripId === this.currentTripId);
+        if (plan) {
+            plan[field] = val;
+            this.updateCurrentUserInDatabase();
+            this.renderPlanner();
+        }
     }
 
-    deletePlan(idx) {
-        const removed = this.plans.splice(idx, 1)[0];
-        localStorage.setItem("wt_plans", JSON.stringify(this.plans));
-        this.showToast(`นำ ${removed.destName} ออกจากแผนเดินทางแล้ว`, "warning");
-        this.renderPlanner();
+    deletePlan(destId) {
+        const idx = this.plans.findIndex(p => p.destId === destId && p.tripId === this.currentTripId);
+        if (idx !== -1) {
+            const removed = this.plans.splice(idx, 1)[0];
+            this.updateCurrentUserInDatabase();
+            this.showToast(`นำ "${removed.destName}" ออกจากแผนเดินทางแล้ว`, "warning");
+            this.renderPlanner();
+            
+            // Sync destination details button state
+            if (this.currentView === "detail") {
+                this.viewDetail(removed.destId);
+            }
+        }
     }
 
     sharePlanner() {
-        if (this.plans.length === 0) {
-            this.showToast("ยังไม่มีแผนการเดินทางให้แชร์", "error");
+        if (!this.currentUserEmail) {
+            this.showToast("กรุณาลงชื่อเข้าใช้ก่อนแชร์แผนเดินทาง", "error");
             return;
         }
 
-        let shareText = "📍 แผนการท่องเที่ยว World Travel ของฉัน:\n\n";
-        this.plans.forEach(plan => {
+        const tripPlans = this.plans.filter(p => p.tripId === this.currentTripId);
+        if (tripPlans.length === 0) {
+            this.showToast("ยังไม่มีแผนการเดินทางในทริปนี้ให้แชร์", "error");
+            return;
+        }
+
+        let shareText = `📍 แผนการท่องเที่ยว [${this.getCurrentTripName()}] ของฉัน:\n\n`;
+        tripPlans.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`)).forEach(plan => {
             const d = new Date(plan.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
             shareText += `- ${d} เวลา ${plan.time} น. : ${plan.destName}\n`;
             if (plan.notes) shareText += `  (โน้ต: ${plan.notes})\n`;
         });
 
         navigator.clipboard.writeText(shareText).then(() => {
-            this.showToast("คัดลอกลิงก์ตารางทริปพร้อมแชร์ลงคลิปบอร์ดแล้ว!");
+            this.showToast("คัดลอกตารางทริปนี้ลงคลิปบอร์ดแล้ว! ส่งต่อให้เพื่อนได้เลย");
         }).catch(() => {
-            this.showToast("ไม่สามารถคัดลอกตารางทริปได้ กรุณาลองใหม่อีกครั้ง", "error");
+            this.showToast("ไม่สามารถคัดลอกได้ กรุณาลองใหม่อีกครั้ง", "error");
         });
     }
 
-    // Render Reviews dashboard page
+    printPlanner() {
+        if (!this.currentUserEmail) {
+            this.showToast("กรุณาลงชื่อเข้าใช้เพื่อพิมพ์แผน", "error");
+            return;
+        }
+        window.print();
+    }
+
+    // Multiple trips management
+    renderTripSelector() {
+        const selector = document.getElementById("trip-selector");
+        if (!selector) return;
+
+        selector.innerHTML = "";
+        this.trips.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t.id;
+            opt.textContent = t.name;
+            if (t.id === this.currentTripId) {
+                opt.selected = true;
+            }
+            selector.appendChild(opt);
+        });
+    }
+
+    handleTripChange(tripId) {
+        this.currentTripId = tripId;
+        this.updateCurrentUserInDatabase();
+        this.renderPlanner();
+    }
+
+    createNewTrip() {
+        if (!this.currentUserEmail) {
+            this.showToast("กรุณาลงชื่อเข้าใช้เพื่อจัดการทริป", "error");
+            return;
+        }
+        const name = prompt("ระบุชื่อทริปการท่องเที่ยวใหม่ของคุณ:");
+        if (!name || !name.trim()) return;
+
+        const newTripId = `trip-${Date.now()}`;
+        this.trips.push({ id: newTripId, name: name.trim() });
+        this.currentTripId = newTripId;
+
+        this.updateCurrentUserInDatabase();
+        this.renderPlanner();
+        this.showToast(`สร้างทริป "${name.trim()}" สำเร็จแล้ว`);
+    }
+
+    deleteCurrentTrip() {
+        if (!this.currentUserEmail) return;
+        if (this.trips.length <= 1) {
+            this.showToast("ต้องมีแผนการเดินทางอย่างน้อย 1 ทริป ไม่สามารถลบทริปสุดท้ายได้", "error");
+            return;
+        }
+
+        const currentName = this.getCurrentTripName();
+        if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบทริป "${currentName}" และแผนเดินทางทั้งหมดในทริปนี้?`)) return;
+
+        // Clean up plans for this trip
+        this.plans = this.plans.filter(p => p.tripId !== this.currentTripId);
+
+        // Delete trip
+        const idx = this.trips.findIndex(t => t.id === this.currentTripId);
+        this.trips.splice(idx, 1);
+
+        // Active first trip
+        this.currentTripId = this.trips[0].id;
+
+        this.updateCurrentUserInDatabase();
+        this.renderPlanner();
+        this.showToast(`ลบทริป "${currentName}" เรียบร้อยแล้ว`, "warning");
+    }
+
+    // Custom activities creation
+    openCustomActivityModal() {
+        if (!this.currentUserEmail) {
+            this.showToast("กรุณาลงชื่อเข้าใช้ก่อนสร้างกิจกรรม", "error");
+            this.navigate("profile");
+            return;
+        }
+        const modal = document.getElementById("custom-activity-modal");
+        document.getElementById("custom-activity-form").reset();
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("custom-date").value = today;
+        modal.classList.add("open");
+    }
+
+    closeCustomActivityModal() {
+        document.getElementById("custom-activity-modal").classList.remove("open");
+    }
+
+    submitCustomActivity(event) {
+        event.preventDefault();
+        const title = document.getElementById("custom-title").value.trim();
+        const date = document.getElementById("custom-date").value;
+        const time = document.getElementById("custom-time").value;
+        const notes = document.getElementById("custom-notes").value.trim();
+
+        const defaultImages = [
+            "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80"
+        ];
+        const randomImg = defaultImages[Math.floor(Math.random() * defaultImages.length)];
+
+        this.plans.push({
+            destId: `custom-${Date.now()}`,
+            destName: title,
+            image: randomImg,
+            date: date,
+            time: time,
+            notes: notes,
+            tripId: this.currentTripId
+        });
+
+        this.updateCurrentUserInDatabase();
+        this.closeCustomActivityModal();
+        this.renderPlanner();
+        this.showToast(`เพิ่มกิจกรรม "${title}" เข้าในแผนสำเร็จแล้ว`);
+    }
+
+    // Render Reviews dashboard page with filtering and custom photos
     renderReviewsPage() {
         const feed = document.getElementById("all-reviews-feed");
         const avgNum = document.getElementById("all-reviews-avg");
@@ -1813,54 +2072,91 @@ class WorldTravelApp {
 
         feed.innerHTML = "";
 
+        // Calculate general stats (always based on total reviews)
         if (this.reviews.length === 0) {
-            feed.innerHTML = `
-                <div class="glass-card" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                    ยังไม่มีความเห็นใดๆ
-                </div>
-            `;
             avgNum.textContent = "0.0";
             starsContainer.innerHTML = "";
             countLabel.textContent = "จากรีวิวทั้งหมด 0 รีวิว";
-            return;
+        } else {
+            const totalRating = this.reviews.reduce((sum, r) => sum + r.rating, 0);
+            const avg = (totalRating / this.reviews.length).toFixed(1);
+            avgNum.textContent = avg;
+            starsContainer.innerHTML = this.generateStarsHTML(parseFloat(avg));
+            countLabel.textContent = `จากรีวิวทั้งหมด ${this.reviews.length} รีวิว`;
         }
 
-        // Calculate general rating
-        const totalRating = this.reviews.reduce((sum, r) => sum + r.rating, 0);
-        const avg = (totalRating / this.reviews.length).toFixed(1);
+        // Apply filters
+        const ratingFilter = document.getElementById("review-filter-rating") ? document.getElementById("review-filter-rating").value : "";
+        const destFilter = document.getElementById("review-filter-destination") ? document.getElementById("review-filter-destination").value : "";
 
-        avgNum.textContent = avg;
-        starsContainer.innerHTML = this.generateStarsHTML(parseFloat(avg));
-        countLabel.textContent = `จากรีวิวทั้งหมด ${this.reviews.length} รีวิว`;
+        let filteredReviews = this.reviews;
+        if (ratingFilter) {
+            filteredReviews = filteredReviews.filter(r => r.rating === parseInt(ratingFilter));
+        }
+        if (destFilter) {
+            filteredReviews = filteredReviews.filter(r => r.destId === destFilter);
+        }
 
-        // Render reviews list
-        this.reviews.forEach(rev => {
-            const item = document.createElement("div");
-            item.className = "review-item";
-            item.innerHTML = `
-                <div class="review-item-header">
-                    <div class="review-user-info">
-                        <div class="review-avatar">
-                            <img src="${rev.avatar}" alt="${rev.author}">
-                        </div>
-                        <div>
-                            <div class="review-user-name">${rev.author}</div>
-                            <div class="review-meta">${rev.date}</div>
-                        </div>
-                    </div>
-                    <div class="review-rating-row">
-                        <div class="stars" style="margin-right: 10px;">${this.generateStarsHTML(rev.rating)}</div>
-                        <a href="#" class="review-dest-tag" onclick="event.preventDefault(); app.viewDetail('${rev.destId}')">
-                            <i class="fa-solid fa-location-dot"></i> ${rev.destName}
-                        </a>
-                    </div>
+        if (filteredReviews.length === 0) {
+            feed.innerHTML = `
+                <div class="glass-card" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    ไม่พบข้อมูลรีวิวที่ตรงตามตัวกรองค่ะ
                 </div>
-                <p class="review-text">${rev.comment}</p>
             `;
-            feed.appendChild(item);
-        });
+        } else {
+            // Render filtered reviews list
+            filteredReviews.forEach(rev => {
+                const item = document.createElement("div");
+                item.className = "review-item";
+                
+                // Show trash icon if logged in user is the owner
+                const isOwner = this.currentUserEmail && (rev.authorEmail === this.currentUserEmail || (this.currentUserEmail === "somsak@worldtravel.com" && !rev.authorEmail));
+                
+                // Generate photos grid
+                let photosHTML = "";
+                if (rev.photos && rev.photos.length > 0) {
+                    photosHTML = `
+                        <div class="review-photos-grid">
+                            ${rev.photos.map(p => `
+                                <div class="review-photo-thumbnail" onclick="app.viewFullImage('${p}')">
+                                    <img src="${p}" alt="รีวิวรูปถ่าย">
+                                </div>
+                            `).join("")}
+                        </div>
+                    `;
+                }
 
-        // Render bar chart breakdown
+                item.innerHTML = `
+                    <div class="review-item-header">
+                        <div class="review-user-info">
+                            <div class="review-avatar">
+                                <img src="${rev.avatar}" alt="${rev.author}">
+                            </div>
+                            <div>
+                                <div class="review-user-name">${rev.author}</div>
+                                <div class="review-meta">${rev.date}</div>
+                            </div>
+                        </div>
+                        <div class="review-rating-row" style="display: flex; align-items: center;">
+                            <div class="stars" style="margin-right: 10px;">${this.generateStarsHTML(rev.rating)}</div>
+                            <a href="#" class="review-dest-tag" onclick="event.preventDefault(); app.viewDetail('${rev.destId}')">
+                                <i class="fa-solid fa-location-dot"></i> ${rev.destName}
+                            </a>
+                            ${isOwner ? `
+                                <button onclick="app.deleteReview('${rev.comment.replace(/'/g, "\\'")}', '${rev.author.replace(/'/g, "\\'")}', event)" style="background: none; border: none; color: var(--danger); cursor: pointer; padding: 5px; margin-left: 12px; font-size: 0.95rem; opacity: 0.7; transition: var(--transition);" title="ลบรีวิวนี้">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            ` : ""}
+                        </div>
+                    </div>
+                    <p class="review-text">${rev.comment}</p>
+                    ${photosHTML}
+                `;
+                feed.appendChild(item);
+            });
+        }
+
+        // Render bar chart breakdown (always based on total reviews)
         const barChart = document.getElementById("summary-bar-chart");
         barChart.innerHTML = "";
 
@@ -1881,10 +2177,34 @@ class WorldTravelApp {
         }
     }
 
+    populateReviewFilterDestinations() {
+        const selector = document.getElementById("review-filter-destination");
+        if (!selector) return;
+        selector.innerHTML = `<option value="">สถานที่ท่องเที่ยวทั้งหมด</option>`;
+        this.destinations.forEach(dest => {
+            const opt = document.createElement("option");
+            opt.value = dest.id;
+            opt.textContent = dest.name;
+            selector.appendChild(opt);
+        });
+    }
+
     // Modal to write reviews
     openReviewModal(destId) {
+        if (!this.currentUserEmail) {
+            this.showToast("โปรดลงชื่อเข้าใช้งานก่อนเขียนรีวิวค่ะ", "error");
+            this.navigate("profile");
+            return;
+        }
+
         document.getElementById("review-dest-id").value = destId;
         document.getElementById("review-form").reset();
+        this.attachedReviewPhotos = [];
+        document.getElementById("review-photos-preview").innerHTML = "";
+        
+        // Auto-fill author name with logged-in user name
+        document.getElementById("review-author").value = this.profile.name;
+        
         document.getElementById("review-modal").classList.add("open");
     }
 
@@ -1892,12 +2212,54 @@ class WorldTravelApp {
         document.getElementById("review-modal").classList.remove("open");
     }
 
+    // Review attached photo files reader
+    handleReviewPhotosChange(event) {
+        const files = event.target.files;
+        const previewContainer = document.getElementById("review-photos-preview");
+
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith("image/")) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64Img = e.target.result;
+                this.attachedReviewPhotos.push(base64Img);
+
+                const item = document.createElement("div");
+                item.className = "preview-photo-item";
+                const idx = this.attachedReviewPhotos.length - 1;
+                item.innerHTML = `
+                    <img src="${base64Img}" alt="พรีวิว">
+                    <button type="button" class="btn-remove-preview" onclick="app.removeAttachedPhoto(${idx})">&times;</button>
+                `;
+                previewContainer.appendChild(item);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    removeAttachedPhoto(idx) {
+        this.attachedReviewPhotos.splice(idx, 1);
+        const previewContainer = document.getElementById("review-photos-preview");
+        previewContainer.innerHTML = "";
+
+        this.attachedReviewPhotos.forEach((img, i) => {
+            const item = document.createElement("div");
+            item.className = "preview-photo-item";
+            item.innerHTML = `
+                <img src="${img}" alt="พรีวิว">
+                <button type="button" class="btn-remove-preview" onclick="app.removeAttachedPhoto(${i})">&times;</button>
+            `;
+            previewContainer.appendChild(item);
+        });
+    }
+
     submitReview(event) {
         event.preventDefault();
 
         const destId = document.getElementById("review-dest-id").value;
-        const author = document.getElementById("review-author").value;
-        const comment = document.getElementById("review-comment").value;
+        const author = document.getElementById("review-author").value.trim();
+        const comment = document.getElementById("review-comment").value.trim();
 
         const ratingInput = document.querySelector('input[name="star-rating"]:checked');
         if (!ratingInput) {
@@ -1912,20 +2274,22 @@ class WorldTravelApp {
         const today = new Date();
         const dateStr = today.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
 
-        // Add review
+        // Add review with details
         this.reviews.unshift({
             destId: destId,
             destName: destName,
             author: author,
+            authorEmail: this.currentUserEmail,
             rating: rating,
             comment: comment,
             date: dateStr,
-            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" // Default profile avatar
+            avatar: this.profile.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80",
+            photos: this.attachedReviewPhotos || []
         });
 
         localStorage.setItem("wt_reviews", JSON.stringify(this.reviews));
         this.closeReviewModal();
-        this.showToast("ขอบคุณสำหรับคำรีวิว! ความคิดเห็นของคุณถูกเผยแพร่แล้ว");
+        this.showToast("ส่งความคิดเห็นรีวิวเรียบร้อยแล้วค่ะ ขอบคุณมากนะคะ!");
 
         // Refresh views
         this.renderReviewsPage();
@@ -1934,8 +2298,59 @@ class WorldTravelApp {
         }
     }
 
+    deleteReview(comment, author, event) {
+        if (event) event.stopPropagation();
+        if (!confirm("คุณแน่ใจไหมคะว่าต้องการลบคำรีวิวนี้อย่างถาวร?")) return;
+
+        const idx = this.reviews.findIndex(r => r.comment === comment && r.author === author);
+        if (idx !== -1) {
+            const destId = this.reviews[idx].destId;
+            this.reviews.splice(idx, 1);
+            localStorage.setItem("wt_reviews", JSON.stringify(this.reviews));
+            this.showToast("ลบรีวิวเรียบร้อยแล้วค่ะ", "warning");
+
+            this.renderReviewsPage();
+            if (this.currentView === "detail" && destId) {
+                this.viewDetail(destId);
+            }
+        }
+    }
+
+    viewFullImage(url) {
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.top = "0";
+        overlay.style.left = "0";
+        overlay.style.width = "100%";
+        overlay.style.height = "100%";
+        overlay.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+        overlay.style.zIndex = "9999";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.cursor = "zoom-out";
+        overlay.innerHTML = `<img src="${url}" style="max-width: 90%; max-height: 90%; object-fit: contain; border-radius: var(--radius-lg); box-shadow: 0 10px 40px rgba(0,0,0,0.8); animation: zoomIn 0.2s ease-out;">`;
+        overlay.onclick = () => overlay.remove();
+        document.body.appendChild(overlay);
+    }
+
     // Render profile details & stats
     renderProfile() {
+        const authCard = document.getElementById("profile-auth-card");
+        const profileView = document.getElementById("profile-logged-in-view");
+        
+        if (!this.currentUserEmail) {
+            authCard.style.display = "block";
+            profileView.style.display = "none";
+            
+            // Set default empty avatar on navigation header
+            document.getElementById("nav-avatar").src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+            return;
+        }
+
+        authCard.style.display = "none";
+        profileView.style.display = "block";
+
         document.getElementById("profile-name-display").textContent = this.profile.name;
         document.getElementById("profile-email-display").textContent = this.profile.email;
         document.getElementById("profile-bio").value = this.profile.bio;
@@ -1943,6 +2358,9 @@ class WorldTravelApp {
         document.getElementById("profile-email").value = this.profile.email;
         document.getElementById("profile-img-preview").src = this.profile.avatar;
         document.getElementById("nav-avatar").src = this.profile.avatar;
+
+        document.getElementById("profile-style").value = this.profile.style || "Nature";
+        document.getElementById("profile-next-destination").value = this.profile.nextDestination || "";
 
         document.getElementById("stat-visited-count").textContent = this.profile.visitedCount;
         document.getElementById("stat-saved-count").textContent = this.savedDestinations.length;
@@ -1977,34 +2395,145 @@ class WorldTravelApp {
     saveProfile(event) {
         event.preventDefault();
 
-        const name = document.getElementById("profile-name").value;
-        const email = document.getElementById("profile-email").value;
-        const bio = document.getElementById("profile-bio").value;
+        const name = document.getElementById("profile-name").value.trim();
+        const bio = document.getElementById("profile-bio").value.trim();
+        const style = document.getElementById("profile-style").value;
+        const nextDest = document.getElementById("profile-next-destination").value.trim();
 
         this.profile.name = name;
-        this.profile.email = email;
         this.profile.bio = bio;
+        this.profile.style = style;
+        this.profile.nextDestination = nextDest;
 
-        localStorage.setItem("wt_profile", JSON.stringify(this.profile));
-        this.showToast("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้ว");
+        this.updateCurrentUserInDatabase();
+        this.showToast("บันทึกข้อมูลส่วนตัวเรียบร้อยแล้วค่ะ");
         this.renderProfile();
     }
 
-    triggerAvatarSelect() {
-        const urls = [
-            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-            "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80",
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80"
-        ];
+    triggerAvatarUploadClick() {
+        document.getElementById("profile-avatar-file-input").click();
+    }
 
-        // Pick one at random for a cute avatar change effect
-        const randomUrl = urls[Math.floor(Math.random() * urls.length)];
-        this.profile.avatar = randomUrl;
+    handleAvatarFileChange(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-        localStorage.setItem("wt_profile", JSON.stringify(this.profile));
+        if (!file.type.startsWith("image/")) {
+            this.showToast("กรุณาเลือกไฟล์ภาพที่ถูกต้องนะคะ", "error");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64Img = e.target.result;
+            this.profile.avatar = base64Img;
+            document.getElementById("profile-img-preview").src = base64Img;
+            document.getElementById("nav-avatar").src = base64Img;
+
+            this.updateCurrentUserInDatabase();
+            this.showToast("เปลี่ยนรูปโปรไฟล์เรียบร้อยแล้วค่ะ");
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Login/Register Auth switching
+    switchAuthTab(tab) {
+        document.querySelectorAll(".auth-tab").forEach(btn => btn.classList.remove("active"));
+        
+        document.getElementById("tab-login").classList.remove("active");
+        document.getElementById("tab-register").classList.remove("active");
+        document.getElementById(`tab-${tab}`).classList.add("active");
+
+        if (tab === "login") {
+            document.getElementById("login-form").style.display = "flex";
+            document.getElementById("register-form").style.display = "none";
+        } else {
+            document.getElementById("login-form").style.display = "none";
+            document.getElementById("register-form").style.display = "flex";
+        }
+    }
+
+    handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById("login-email").value.trim().toLowerCase();
+        const password = document.getElementById("login-password").value;
+
+        const user = this.users.find(u => u.email === email && u.password === password);
+        if (user) {
+            this.currentUserEmail = email;
+            localStorage.setItem("wt_current_user", email);
+            this.currentUser = user;
+            this.loadUserSessionData();
+            
+            this.showToast(`ลงชื่อเข้าใช้สำเร็จ! ยินดีต้อนรับกลับมาค่ะคุณ ${user.name}`);
+            this.renderProfile();
+            this.renderPlanner();
+            this.updateCounts();
+        } else {
+            this.showToast("อีเมลหรือรหัสผ่านไม่ถูกต้อง โปรดตรวจสอบอีกครั้งค่ะ", "error");
+        }
+    }
+
+    handleRegister(event) {
+        event.preventDefault();
+        const name = document.getElementById("register-name").value.trim();
+        const email = document.getElementById("register-email").value.trim().toLowerCase();
+        const password = document.getElementById("register-password").value;
+
+        if (password.length < 6) {
+            this.showToast("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษรค่ะ", "error");
+            return;
+        }
+
+        const existing = this.users.find(u => u.email === email);
+        if (existing) {
+            this.showToast("อีเมลนี้ถูกลงทะเบียนไว้แล้วค่ะ", "error");
+            return;
+        }
+
+        const newUser = {
+            email: email,
+            password: password,
+            name: name,
+            bio: "นักเดินทางหน้าใหม่ของ World Travel",
+            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+            style: "Nature",
+            nextDestination: "",
+            visitedCount: 0,
+            savedDestinations: [],
+            trips: [
+                { id: `trip-${Date.now()}`, name: "ทริปของฉัน" }
+            ],
+            currentTripId: "",
+            plans: []
+        };
+        newUser.currentTripId = newUser.trips[0].id;
+
+        this.users.push(newUser);
+        this.saveUsersToStorage();
+
+        // Auto login
+        this.currentUserEmail = email;
+        localStorage.setItem("wt_current_user", email);
+        this.currentUser = newUser;
+        this.loadUserSessionData();
+
+        this.showToast(`ลงทะเบียนสำเร็จ! ยินดีต้อนรับคุณ ${name} สู่แพลตฟอร์มของเรานะคะ`);
         this.renderProfile();
-        this.showToast("เปลี่ยนภาพโปรไฟล์เรียบร้อยแล้ว");
+        this.renderPlanner();
+        this.updateCounts();
+    }
+
+    handleLogout() {
+        this.currentUserEmail = null;
+        localStorage.removeItem("wt_current_user");
+        this.currentUser = null;
+        this.loadUserSessionData();
+
+        this.showToast("ออกจากระบบเรียบร้อยแล้วค่ะ ไว้เจอกันใหม่นะคะ", "warning");
+        this.renderProfile();
+        this.renderPlanner();
+        this.updateCounts();
     }
 
     updateCounts() {
